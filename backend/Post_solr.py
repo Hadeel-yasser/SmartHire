@@ -1,10 +1,12 @@
 from urllib.request import urlopen
-from backend.embeddings import batch_encode_to_vectors
+from embeddings import batch_encode_to_vectors
 from index_documents import index_documents, index_extracted_documents
 from extract_text import extract_text_from_pdf, preprocess_text_modified
 import os
 import csv
 import pysolr
+import requests
+import json
 from tika import parser
 
 def get_documents_in_folder(folder_path):
@@ -53,11 +55,7 @@ def get_documents_in_folder(folder_path):
             index_documents(txt_file_path,csv_file_path,core_name,cv_name)
             cv_name = 'CV'
 
-def create_dictionary(cv_name,cv_scores):
-    cv_scores[cv_name] = 0
-    return cv_scores
     
-
 def save_text_to_file(text_lines, output_filename, directory):
     file_path = os.path.join(directory, output_filename)
     with open(file_path, "w", encoding="utf-8") as file:
@@ -78,7 +76,19 @@ def create_csv(core_name,file_name):
         writer = csv.writer(csvfile)
         writer.writerow([])  
     return filepath     
-       
+
+def get_total_document_count(core_name):
+    solr_url = f"http://localhost:8983/solr/{core_name}/select?q=*:*&rows=0"
+    response = requests.get(solr_url)
+    
+    if response.status_code == 200:
+        result = response.json()
+        total_documents = result.get('response', {}).get('numFound', 0)
+        return total_documents
+    else:
+        print(f"Solr request failed with status code: {response.status_code}")
+        return None
+    
 if __name__ == "__main__":
     # replace with the file directory for the generated core
     get_documents_in_folder('E:\ITworx\CVs\Documents\software_engineer')   

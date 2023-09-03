@@ -1,16 +1,34 @@
 import requests
 import json
-from backend.embeddings import get_sentence_embedding
+from Post_solr import get_total_document_count
+from embeddings import get_sentence_embedding
 import re
 from collections import Counter
-from Post_solr import create_dictionary
 
-def search_with_sentence_embedding(embedding_vector,core_name, k=20):
+def calculate_k(total_chunks, desired_coverage=0.9):
+    """
+    Calculate the value of k dynamically based on the total number of chunks in the Solr database.
+    
+    Args:
+        total_chunks (int): The total number of chunks in the Solr database.
+        desired_coverage (float): The desired coverage of results.
+
+    Returns:
+        int: The dynamically calculated value of k.
+    """
+    # You can define your equation or criteria here to calculate k based on total_chunks and desired_coverage.
+    # For example, you can use a formula like:
+    # k = int(total_chunks * desired_coverage)
+    k = int(total_chunks * desired_coverage)
+    return k
+
+def search_with_sentence_embedding(embedding_vector,core_name, total_chunks): # takes as input the total amount of documents
     solr_url = "http://localhost:8983/solr/" + core_name 
     if len(embedding_vector) != 384:
         print(f"Error: The provided vector has dimension {len(embedding_vector)}, but {384} is expected.")
         return None
-    
+    k = calculate_k(total_chunks)
+    print("K chunks =" + str(k))
     solr_query = {
         "query": f"{{!knn f=vector topK={k}}}[{', '.join(map(str, embedding_vector))}]"
     }
@@ -31,7 +49,10 @@ def query_user_prompt(prompt):
 
     sentence_vector=get_sentence_embedding(prompt)
     #search(sentence_vector)
-    search_results = search_with_sentence_embedding(sentence_vector,'software_engineer')
+    # call method to get total amount of documents
+    # the function should take as input also core_name
+    total_document_count = get_total_document_count(core_name= 'software_engineer')
+    search_results = search_with_sentence_embedding(sentence_vector,'software_engineer',total_document_count)
 
     return search_results
 
@@ -62,10 +83,12 @@ def get_cv_chunks(search_results):
             else: 
                 cv_chunks[output_string] =[]
                 cv_chunks[output_string].append(doc['id'])
-            #print(f"ID: {doc['id']}, Text: {doc['text']}, Score: {doc['score']}")
+            print(f"ID: {doc['id']}, Text: {doc['text']}, Score: {doc['score']}")
     return cv_chunks
 
 if __name__== '__main__':
     query_user_prompt('Find candidates with good analytical skills and are experienced in python')
+    pass
+    
     
         
