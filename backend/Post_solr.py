@@ -11,7 +11,7 @@ from tika import parser
 
 def get_documents_in_folder(folder_path):
 
-    #folder_path = 'E:\ITworx\CVs\Documents'  # replace with the path to your folder
+    #folder_path = 'E:\ITworx\CVs\Documents'  # replace with the path to your folder...
     file_list = os.listdir(folder_path)
     id_number=100
     cv_name = 'CV'
