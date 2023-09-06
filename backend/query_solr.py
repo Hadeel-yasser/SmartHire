@@ -5,7 +5,7 @@ from embeddings import get_sentence_embedding
 import re
 from collections import Counter
 
-def calculate_k(total_chunks, desired_coverage=0.9):
+def calculate_k(total_chunks, desired_coverage=0.5):
     """
     Calculate the value of k dynamically based on the total number of chunks in the Solr database.
     
@@ -38,6 +38,11 @@ def search_with_sentence_embedding(embedding_vector,core_name, total_chunks): # 
 
     if response.status_code == 200:
         results = response.json()
+        num_documents_returned = len(results.get("response", {}).get("docs", []))
+
+        if num_documents_returned != k:
+            print(f"Warning: Expected {k} documents, but only received {num_documents_returned} documents.")
+    
         return results
     else:
         print(f"Solr request failed with status code: {response.status_code}")
@@ -57,6 +62,7 @@ def query_user_prompt(prompt):
     return search_results
 
 def get_cv_scores(search_results):
+    counter =0
     if search_results:
         #print("Search results in scores:")
         cv_scores ={}
@@ -68,7 +74,10 @@ def get_cv_scores(search_results):
                 cv_scores[output_string] += doc['score']
             else: 
                 cv_scores[output_string]= doc['score']
-            #print(f"ID: {doc['id']}, Text: {doc['text']}, Score: {doc['score']}")
+            print(f"ID: {doc['id']}, Text: {doc['text']}, Score: {doc['score']}")
+            counter+=1
+            print("\n")
+            print(counter)
     return cv_scores
 
 def get_cv_chunks(search_results):
@@ -83,12 +92,12 @@ def get_cv_chunks(search_results):
             else: 
                 cv_chunks[output_string] =[]
                 cv_chunks[output_string].append(doc['id'])
-            print(f"ID: {doc['id']}, Text: {doc['text']}, Score: {doc['score']}")
+            #print(f"ID: {doc['id']}, Text: {doc['text']}, Score: {doc['score']}")
     return cv_chunks
 
 if __name__== '__main__':
-    query_user_prompt('Find candidates with good analytical skills and are experienced in python')
-    pass
+    query_user_prompt('Find candidates with good analytical skills')
+    
     
     
         

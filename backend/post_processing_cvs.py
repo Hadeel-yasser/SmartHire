@@ -8,7 +8,8 @@ import pysolr
 def get_top_ranked_cvs(prompt,percentage_of_cvs):
     search_result=query_user_prompt(prompt)
     cv_scores=get_cv_scores(search_result)
-    
+    print("-----------CV Scores---------")
+    print(cv_scores)
     cv_chunks=get_cv_chunks(search_result)
     sorted_items = sorted(cv_scores.items(), key=lambda item: item[1], reverse=True)
     
@@ -20,7 +21,7 @@ def get_top_ranked_cvs(prompt,percentage_of_cvs):
     keep_only_selected_keys(cv_chunks,top_keys)
 
     print(cv_chunks)
-    cv_documents= fetch_documents_by_cv_numbers(cv_chunks,'software_engineer')
+    cv_documents= fetch_documents_by_cv_numbers(cv_chunks,'software_engineer') # avoid the function by adding the text to the cv_chunks dictionary
     if cv_documents:
         print("Retrieved CV documents:")
         for cv_number, docs in cv_documents.items():
@@ -38,7 +39,6 @@ def keep_only_selected_keys(dictionary, keys_to_keep):
         del dictionary[key]
 
 # query to retrieve the matching chunks in the accepted cvs
-import requests
 
 def fetch_documents_by_cv_numbers(cv_info_dict,core_name):
 
@@ -76,7 +76,7 @@ def fetch_documents_by_cv_numbers(cv_info_dict,core_name):
 
 if __name__== '__main__':
     
-    selected_items = get_top_ranked_cvs('Find candidates with good analytical skills and are experienced in python',0.5)
+    selected_items = get_top_ranked_cvs('Find candidates with good analytical skills',0.5)
 
     print("Selected items:")
     for item, value in selected_items.items():
