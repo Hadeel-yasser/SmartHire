@@ -1,19 +1,20 @@
 from urllib.request import urlopen
 from embeddings import batch_encode_to_vectors
 from index_documents import index_documents, index_extracted_documents
-from extract_text import extract_text_from_pdf, preprocess_text_modified
+from extract_text import extract_text_from_pdf, preprocess_text_and_extract_name
 import os
 import csv
 import pysolr
 import requests
 import json
-from tika import parser
+cv_name_and_id_dict={}
+txt_file_path_dict={}
 
 def get_documents_in_folder(folder_path):
 
     #folder_path = 'E:\ITworx\CVs\Documents'  # replace with the path to your folder...
     file_list = os.listdir(folder_path)
-    id_number=100
+    
     cv_name = 'CV'
     counter =0
     
@@ -37,16 +38,14 @@ def get_documents_in_folder(folder_path):
 
             # extract the text from pdf
             extracted_text= extract_text_from_pdf(file_path)
-
             # remove extra spaces and preprocess the extracted text
-            prepocessed_text= preprocess_text_modified(extracted_text)
+            prepocessed_text,name = preprocess_text_and_extract_name(extracted_text)
+            cv_name_and_id_dict[cv_name]= name
             # create text file to store the extracted text
             name_for_text = name_without_extension + '.txt'
             txt_file_path=save_text_to_file(prepocessed_text,name_for_text,folder_path) # pass the text, name for the text file, and the folder path of the to be created file
-            
-            # encode extracted text using word2vec which takes as input the extracted text it self and not the text file
-            #create_word2vec_model(prepocessed_text,csv_file_path)
-
+            txt_file_path_dict[cv_name]=txt_file_path
+            print("Text file path: ",txt_file_path_dict)
             # call def batch_encode_to_vectors
 
             batch_encode_to_vectors(txt_file_path,csv_file_path)
@@ -55,6 +54,41 @@ def get_documents_in_folder(folder_path):
             index_documents(txt_file_path,csv_file_path,core_name,cv_name)
             cv_name = 'CV'
 
+def get_cvs_names_in_folder(folder_path):
+    #folder_path = 'E:\ITworx\CVs\Documents'  # replace with the path to your folder...
+    file_list = os.listdir(folder_path)
+    
+    cv_name = 'CV'
+    counter =0
+    
+    for file_name in file_list:
+        
+        if file_name.endswith('.pdf'):  # replace '.txt' with the file extension you want to read
+            counter+=1
+            cv_name += str(counter)
+            
+            file_path = os.path.join(folder_path, file_name)
+            
+            #core_name= os.path.basename(folder_path)
+            #core_name_no_extenstion= os.path.splitext(core_name)[0]
+
+            basename = os.path.basename(file_name)
+            name_without_extension = os.path.splitext(basename)[0]
+
+            # extract the text from pdf
+            extracted_text= extract_text_from_pdf(file_path)
+            # remove extra spaces and preprocess the extracted text
+            prepocessed_text,name = preprocess_text_and_extract_name(extracted_text)
+            cv_name_and_id_dict[cv_name]= name
+            
+            # create text file to store the extracted text
+            name_for_text = name_without_extension + '.txt'
+            txt_file_path = os.path.join(folder_path, name_for_text)
+            #txt_file_path=save_text_to_file(prepocessed_text,name_for_text,folder_path) # pass the text, name for the text file, and the folder path of the to be created file
+            txt_file_path_dict[cv_name]=txt_file_path
+            
+            cv_name = 'CV'
+    return cv_name_and_id_dict, txt_file_path_dict
     
 def save_text_to_file(text_lines, output_filename, directory):
     file_path = os.path.join(directory, output_filename)
@@ -75,7 +109,8 @@ def create_csv(core_name,file_name):
     with open(os.path.join(directory, file_name), 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow([])  
-    return filepath     
+    return filepath  
+   
 
 def get_total_document_count(core_name):
     solr_url = f"http://localhost:8983/solr/{core_name}/select?q=*:*&rows=0"

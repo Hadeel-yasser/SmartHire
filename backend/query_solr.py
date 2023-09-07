@@ -24,7 +24,7 @@ def calculate_k(total_chunks, desired_coverage=0.2):
     return k
 
 def search_with_sentence_embedding(embedding_vector,core_name, total_chunks): # takes as input the total amount of documents
-    logging.basicConfig(level=logging.DEBUG)
+    #logging.basicConfig(level=logging.DEBUG)
     solr_url = "http://localhost:8983/solr/" + core_name 
     if len(embedding_vector) != 384:
         print(f"Error: The provided vector has dimension {len(embedding_vector)}, but {384} is expected.")
@@ -37,7 +37,7 @@ def search_with_sentence_embedding(embedding_vector,core_name, total_chunks): # 
 
     headers = {'Content-Type': 'application/json'}
     response = requests.post(f"{solr_url}/select?fl=id,text,score", data=json.dumps(solr_query), headers=headers)
-    logging.debug(f"Generated Solr Query: {solr_query}")
+    #logging.debug(f"Generated Solr Query: {solr_query}")
     if response.status_code == 200:
         results = response.json()
         print(results)

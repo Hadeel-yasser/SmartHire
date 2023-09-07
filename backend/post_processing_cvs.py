@@ -2,6 +2,7 @@ from query_solr import query_user_prompt, get_cv_chunks, get_cv_scores
 import requests
 import math
 import pysolr
+from Post_solr import get_cvs_names_in_folder
 
 # function to get the top ranked cvs based on the calculated total score ...
 
@@ -21,6 +22,14 @@ def get_top_ranked_cvs(prompt,percentage_of_cvs):
     keep_only_selected_keys(cv_chunks,top_keys)
     print("-------CV Chunks------")
     print(cv_chunks)
+    
+    
+    cv_name_and_id_dict , txt_file_path_dict= get_cvs_names_in_folder("E:\ITworx\CVs\Documents\software_engineer")
+    keep_only_selected_keys(txt_file_path_dict,top_keys) # to pass the text file to the openAI function
+    keep_only_selected_keys(cv_name_and_id_dict,top_keys) # to retrieve candidates names
+    print("-------Candidates---------")
+    print(cv_name_and_id_dict)
+    print(txt_file_path_dict)
     '''cv_documents= fetch_documents_by_cv_numbers(cv_chunks,'software_engineer') # avoid the function by adding the text to the cv_chunks dictionary
     if cv_documents:
         print("Retrieved CV documents:")
