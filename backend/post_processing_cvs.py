@@ -19,15 +19,15 @@ def get_top_ranked_cvs(prompt,percentage_of_cvs):
     top_items = sorted_items[:num_selected]
     top_keys = [item[0] for item in top_items]
     keep_only_selected_keys(cv_chunks,top_keys)
-
+    print("-------CV Chunks------")
     print(cv_chunks)
-    cv_documents= fetch_documents_by_cv_numbers(cv_chunks,'software_engineer') # avoid the function by adding the text to the cv_chunks dictionary
+    '''cv_documents= fetch_documents_by_cv_numbers(cv_chunks,'software_engineer') # avoid the function by adding the text to the cv_chunks dictionary
     if cv_documents:
         print("Retrieved CV documents:")
         for cv_number, docs in cv_documents.items():
             print(f"CV Number: {cv_number}")
             for doc in docs:
-                print(f"  ID: {doc['id']}, Text: {doc.get('text', 'N/A')}")
+                print(f"  ID: {doc['id']}, Text: {doc.get('text', 'N/A')}")'''
     
     return dict(top_items)
 

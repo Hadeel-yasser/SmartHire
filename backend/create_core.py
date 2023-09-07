@@ -2,7 +2,6 @@ import pysolr
 import os
 import requests
 
-core_name=''
 
 def create_cores(core_name):
     solr_base_url = "http://localhost:8983/solr"
@@ -18,6 +17,7 @@ def create_cores(core_name):
     }
 
     response = requests.post(create_core_url, data=data)
+    create_folder_for_core(core_name)
     print(response.text)
     return core_name
 
